@@ -9,23 +9,24 @@ import utils.Validation;
 
 public class EditorialService {
 
-    private final EditorialDAO dao = new EditorialDAO();
-    private final Scanner sc = new Scanner(System.in);
+    private static final EditorialDAO dao = new EditorialDAO();
+    private static final Scanner sc = new Scanner(System.in);
 
-    public void menu() {
-        int op;
+    public static void menu() {
+        int opcion;
         do {
-            System.out.println("\n--- EDITORIALES ---");
-            System.out.println("1. Crear");
-            System.out.println("2. Consultar por ID");
-            System.out.println("3. Listar");
-            System.out.println("4. Modificar");
-            System.out.println("5. Eliminar");
-            System.out.println("0. Volver");
-            op = sc.nextInt(); sc.nextLine();
+            System.out.println("\nMENÚ DE EDITORIALES");
+            System.out.println("1. Crear editorial nueva.");
+            System.out.println("2. Consultar una editorial por ID.");
+            System.out.println("3. Listar editoriales.");
+            System.out.println("4. Modificar una editorial.");
+            System.out.println("5. Eliminar una editorial.");
+            System.out.println("6. Volver al menú principal.");
+            opcion = sc.nextInt(); 
+            sc.nextLine();
 
             try {
-                switch (op) {
+                switch (opcion) {
                     case 1:
                         crear();
                         break;
@@ -41,6 +42,9 @@ public class EditorialService {
                     case 5:
                         eliminar();
                         break;
+                    case 6:
+                        System.out.println("Volviendo al menú principal...");
+                        break;
                     default:
                         System.out.println("Opción no válida.");
                         break;
@@ -48,11 +52,11 @@ public class EditorialService {
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
-        } while (op != 0);
+        } while (opcion != 0);
     }
 
-    private void crear() throws SQLException {
-        System.out.print("Nombre: ");
+    private static void crear() throws SQLException {
+        System.out.print("Escribe un nombre para la nueva editorial: ");
         String nombre = sc.nextLine();
 
         if (!Validation.validarNombreEditorial(nombre)) return;
@@ -61,7 +65,7 @@ public class EditorialService {
         System.out.println("Editorial creada correctamente.");
     }
 
-    private void consultar() throws SQLException {
+    private static void consultar() throws SQLException {
         System.out.print("ID: ");
         int id = sc.nextInt();
 
@@ -75,12 +79,12 @@ public class EditorialService {
         System.out.println("Número de libros: " + dao.contarLibros(id));
     }
 
-    private void listar() throws SQLException {
+    private static void listar() throws SQLException {
         List<EditorialDTO> lista = dao.listarTodos();
         lista.forEach(e -> System.out.println(e.getID_Editorial() + " - " + e.getNombre_Editorial()));
     }
 
-    private void modificar() throws SQLException {
+    private static void modificar() throws SQLException {
         System.out.print("ID: ");
         int id = sc.nextInt(); sc.nextLine();
 
@@ -93,7 +97,7 @@ public class EditorialService {
         System.out.println("Editorial modificada.");
     }
 
-    private void eliminar() throws SQLException {
+    private static void eliminar() throws SQLException {
         System.out.print("ID: ");
         int id = sc.nextInt();
 

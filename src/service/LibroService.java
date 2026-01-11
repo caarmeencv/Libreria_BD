@@ -10,11 +10,11 @@ import utils.Validation;
 
 public class LibroService {
 
-    private final LibroDAO dao = new LibroDAO();
-    private final EditorialDAO editorialDAO = new EditorialDAO();
-    private final Scanner sc = new Scanner(System.in);
+    private static final LibroDAO dao = new LibroDAO();
+    private static final EditorialDAO editorialDAO = new EditorialDAO();
+    private static final Scanner sc = new Scanner(System.in);
 
-    public void menu() {
+    public static void menu() {
         int op;
         do {
             System.out.println("\n--- LIBROS ---");
@@ -61,7 +61,7 @@ public class LibroService {
         } while (op != 0);
     }
 
-    private void crear() throws SQLException {
+    private static void crear() throws SQLException {
         if (editorialDAO.listarTodos().isEmpty()) {
             System.out.println("No existen editoriales. Cree una primero.");
             return;
@@ -82,7 +82,7 @@ public class LibroService {
         System.out.println("Libro creado correctamente.");
     }
 
-    private void consultar() throws SQLException {
+    private static void consultar() throws SQLException {
         System.out.print("ID: ");
         int id = sc.nextInt();
 
@@ -96,12 +96,12 @@ public class LibroService {
         dao.autoresPorLibro(id).forEach(a -> System.out.println("Autor: " + a));
     }
 
-    private void listar() throws SQLException {
+    private static void listar() throws SQLException {
         List<LibroDTO> lista = dao.listarTodos();
         lista.forEach(l -> System.out.println(l.getID_Libro() + " - " + l.getTitulo()));
     }
 
-    private void modificar() throws SQLException {
+    private static void modificar() throws SQLException {
         System.out.print("ID: ");
         int id = sc.nextInt(); sc.nextLine();
 
@@ -117,7 +117,7 @@ public class LibroService {
         System.out.println("Libro modificado.");
     }
 
-    private void eliminar() throws SQLException {
+    private static void eliminar() throws SQLException {
         System.out.print("ID: ");
         int id = sc.nextInt();
 
@@ -125,7 +125,7 @@ public class LibroService {
         else System.out.println("No existe.");
     }
 
-    private void relacionar() throws SQLException {
+    private static void relacionar() throws SQLException {
         System.out.print("ID Libro: ");
         int idLibro = sc.nextInt();
         System.out.print("ID Autor: ");
@@ -135,7 +135,7 @@ public class LibroService {
         System.out.println("Relación creada.");
     }
 
-    private void eliminarRelacion() throws SQLException {
+    private static void eliminarRelacion() throws SQLException {
         System.out.print("ID Libro: ");
         int idLibro = sc.nextInt();
         System.out.print("ID Autor: ");

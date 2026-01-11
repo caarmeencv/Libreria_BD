@@ -10,10 +10,10 @@ import utils.Validation;
 
 public class AutorService {
 
-    private final AutorDAO dao = new AutorDAO();
-    private final Scanner sc = new Scanner(System.in);
+    private static final AutorDAO dao = new AutorDAO();
+    private static final Scanner sc = new Scanner(System.in);
 
-    public void menu() {
+    public static void menu() {
         int op;
         do {
             System.out.println("\n--- AUTORES ---");
@@ -56,7 +56,7 @@ public class AutorService {
         } while (op != 0);
     }
 
-    private void crear() throws SQLException {
+    private static void crear() throws SQLException {
         System.out.print("Nombre: ");
         String nombre = sc.nextLine();
         System.out.print("Email: ");
@@ -69,7 +69,7 @@ public class AutorService {
         System.out.println("Autor creado correctamente.");
     }
 
-    private void consultar() throws SQLException {
+    private static void consultar() throws SQLException {
         System.out.print("ID: ");
         int id = sc.nextInt();
 
@@ -83,12 +83,12 @@ public class AutorService {
         dao.librosPorAutor(id).forEach(l -> System.out.println("Libro: " + l));
     }
 
-    private void listar() throws SQLException {
+    private static void listar() throws SQLException {
         List<AutorDTO> lista = dao.listarTodos();
         lista.forEach(a -> System.out.println(a.getID_Autor() + " - " + a.getNombre_Autor()));
     }
 
-    private void modificar() throws SQLException {
+    private static void modificar() throws SQLException {
         System.out.print("ID: ");
         int id = sc.nextInt(); sc.nextLine();
 
@@ -104,7 +104,7 @@ public class AutorService {
         System.out.println("Autor modificado.");
     }
 
-    private void eliminar() throws SQLException {
+    private static void eliminar() throws SQLException {
         System.out.print("ID: ");
         int id = sc.nextInt();
 
@@ -112,7 +112,7 @@ public class AutorService {
         else System.out.println("No existe.");
     }
 
-    private void cargarCSV() throws SQLException {
+    private static void cargarCSV() throws SQLException {
         List<AutorDTO> lista = LeerCSV.loadContactosFromCsv();
 
         lista.removeIf(a ->

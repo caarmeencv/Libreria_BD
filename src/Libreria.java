@@ -12,11 +12,6 @@ public class Libreria {
 
         int opcion = 0;
 
-        EditorialService editorialService = new EditorialService();
-        LibroService libroService = new LibroService();
-        AutorService autorService = new AutorService();
-
-
         while(opcion != 4){
             mostrarMenuPrincipal();
             try {
@@ -25,13 +20,13 @@ public class Libreria {
 
                 switch (opcion) {
                     case 1:
-                        editorialService.menu();
+                        EditorialService.menu();
                         break;
                     case 2:
-                        libroService.menu();
+                        LibroService.menu();
                         break;
                     case 3:
-                        autorService.menu();
+                        AutorService.menu();
                         break;
                     case 4:
                         System.out.println("Saliendo del programa...");
@@ -40,7 +35,7 @@ public class Libreria {
                         System.out.println("Opción no válida. Por favor, elige una opción del 1 al 4.");
                 }
             } catch (InputMismatchException e) {
-                System.out.println("Entrada no válida. Por favor, introduce un número.");
+                System.out.println("Entrada no válida. Por favor, introduce un número entre el 1 y el 4.");
                 sc.nextLine();
             }
         }
@@ -50,10 +45,10 @@ public class Libreria {
 
     private static void mostrarMenuPrincipal() {
         System.out.println("\nMENÚ PRINCIPAL");
-            System.out.println("1. Menú de editoriales");
-            System.out.println("2. Menú de libros");
-            System.out.println("3. Menú de autores");
-            System.out.println("4. Salir");
-            System.out.print("Elige una opción: ");
+            System.out.println("1. Menú de editoriales.");
+            System.out.println("2. Menú de libros.");
+            System.out.println("3. Menú de autores.");
+            System.out.println("4. Salir del programa.");
+            System.out.print("Elige una opción entre 1 y  4: ");
     }
 }
