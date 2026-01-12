@@ -23,12 +23,20 @@ public class LibroDAO {
 
     public static void create(LibroDTO libro) {
         String sql = "INSERT INTO Libro (ISBN, Titulo, ID_Editorial) VALUES (?, ?, ?)";
-        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, libro.getISBN());
             ps.setString(2, libro.getTitulo());
             ps.setInt(3, libro.getID_Editorial());
+
             ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    int idGenerado = rs.getInt(1);
+                    libro.setID_Libro(idGenerado);
+                }
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,47 +100,97 @@ public class LibroDAO {
         }
     }
 
-    public boolean eliminar(int id) throws SQLException {
+    public static boolean eliminar(int id) {
+        //Para eliminar un libro tenemos que eliminar también la relacion entre el libro y el autor en la tabla Libro_Autor(ID_Libro, ID_Autor)
         String sql = "DELETE FROM Libro WHERE ID_Libro = ?";
-        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        String sqlRelaciones = "DELETE FROM Libro_Autor WHERE ID_Libro = ?";
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement psRelaciones = con.prepareStatement(sqlRelaciones); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            psRelaciones.setInt(1, id);
+            psRelaciones.executeUpdate();
 
             ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
+            int filasAfectadas = ps.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
-    public void relacionarAutor(int idLibro, int idAutor) throws SQLException {
+    public static List<LibroDTO> buscarLibrosPorPalabraClave(String palabraClave) {
+        String sql = "SELECT * FROM Libro WHERE Titulo LIKE ?";
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + palabraClave + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                System.out.println("ID_Libro: " + rs.getInt("ID_Libro") + ", Titulo: " + rs.getString("Titulo"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void relacionarAutor(int idLibro, int idAutor) {
         String sql = "INSERT INTO Libro_Autor (ID_Libro, ID_Autor) VALUES (?, ?)";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idLibro);
             ps.setInt(2, idAutor);
             ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public void eliminarRelacion(int idLibro, int idAutor) throws SQLException {
+    public static void eliminarRelacion(int idLibro, int idAutor) {
         String sql = "DELETE FROM Libro_Autor WHERE ID_Libro = ? AND ID_Autor = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idLibro);
             ps.setInt(2, idAutor);
             ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public List<String> autoresPorLibro(int idLibro) throws SQLException {
-        List<String> lista = new ArrayList<>();
-        String sql = "SELECT a.Nombre_Autor FROM Autor a JOIN Libro_Autor la ON a.ID_Autor = la.ID_AutorWHERE la.ID_Libro = ?";
-
+    public static List<String> autoresPorLibro(int idLibro) {
+        String sql = "SELECT a.Nombre_Autor FROM Autor a JOIN Libro_Autor la ON a.ID_Autor = la.ID_Autor WHERE la.ID_Libro = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idLibro);
             ResultSet rs = ps.executeQuery();
+            List<String> lista = new ArrayList<>();
             while (rs.next()) {
-                lista.add(rs.getString(1));
+                lista.add(rs.getString("Nombre_Autor"));
             }
+            return lista;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return lista;
+        return null;
+
+    }
+
+    public static boolean existeRelacion(int idLibro, int idAutor) {
+        String sql = "SELECT COUNT(*) FROM Libro_Autor WHERE ID_Libro = ? AND ID_Autor = ?";
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, idLibro);
+            ps.setInt(2, idAutor);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() && rs.getInt(1) > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

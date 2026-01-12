@@ -21,17 +21,17 @@ public class EditorialDAO {
         }
     }
 
-    public static void create(EditorialDTO editorial) {
+    public static void create(EditorialDTO nuevo) {
         String sql = "INSERT INTO Editorial(Nombre_Editorial) VALUES (?)";
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1, editorial.getNombre_Editorial());
+            ps.setString(1, nuevo.getNombre_Editorial());
 
             ps.executeUpdate();
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    editorial.setID_Editorial(rs.getInt(1));
+                    nuevo.setID_Editorial(rs.getInt(1));
                 }
             }
 

@@ -2,7 +2,8 @@ package service;
 
 import dao.AutorDAO;
 import dto.AutorDTO;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 import utils.LeerCSV;
@@ -14,6 +15,7 @@ public class AutorService {
     private static final Scanner sc = new Scanner(System.in);
 
     public static void dameOpcion() {
+        Scanner sc = new Scanner(System.in);
         int opcion = 0;
         while (opcion != 11) {
             mostrarMenuAutor();
@@ -38,13 +40,28 @@ public class AutorService {
                         eliminar();
                         break;
                     case 6:
-                        cargarCSV();
+                        LibroService.buscarPorPalabraClave();
+                        break;
+                    case 7:
+                        LibroService.relacionar();
+                        break;
+                    case 8:
+                        librosDeAutor();
+                        break;
+                    case 9:
+                        LibroService.eliminarRelacion();
+                        break;
+                    case 10:
+                        cargarDesdeCSV();
+                        break;
+                    case 11:
+                        System.out.println("Volviendo al menú principal...");
                         break;
                     default:
-                        System.out.println("Opción no válida.");
+                        System.out.println("Opción no válida. Por favor, elige un número del 1 al 11.");
                         break;
                 }
-            } catch (Exception e) {
+            } catch (InputMismatchException e) {
                 System.out.println("Error: " + e.getMessage());
             }
         }
@@ -65,79 +82,187 @@ public class AutorService {
         System.out.println("11. Volver al menú principal.");
     }
 
-    public static void crear() throws SQLException {
-        System.out.print("Nombre: ");
-        String nombre = sc.nextLine();
-        System.out.print("Email: ");
-        String email = sc.nextLine();
+    public static void crear() {
+        String nombre, email;
 
-        if (!Validation.validarNombreAutor(nombre)
-                || !Validation.validarEmailAutor(email)) {
-            return;
+        //Comprobar validez del nombre con Validation.validarNombreAutor
+        while (true) {
+            System.out.print("Nombre del autor: ");
+            nombre = sc.nextLine();
+            if (Validation.validarNombreAutor(nombre)) {
+                break;
+            }
         }
 
-        dao.insertar(new AutorDTO(0, email, nombre));
-        System.out.println("Autor creado correctamente.");
+        //Comprobar validez del email con Validation.validarEmailAutor
+        while (true) {
+            System.out.print("Email del autor: ");
+            email = sc.nextLine();
+            if (Validation.validarEmailAutor(email)) {
+                break;
+            }
+        }
+
+        AutorDTO nuevo = new AutorDTO();
+        nuevo.setNombre_Autor(nombre);
+        nuevo.setEmail(email);
+        AutorDAO.create(nuevo);
+        System.out.println("Autor creado con ID: " + nuevo.getID_Autor());
+
     }
 
-    private static void consultar() throws SQLException {
-        System.out.print("ID: ");
+    public static void consultar() {
+        System.out.print("Introduce la ID del Autor a consultar: ");
         int id = sc.nextInt();
 
-        AutorDTO a = dao.buscarPorId(id);
-        if (a == null) {
-            System.out.println("No existe ese autor.");
-            return;
-        }
+        try {
+            AutorDTO autor = AutorDAO.buscarPorId(id);
 
-        System.out.println(a);
-        dao.librosPorAutor(id).forEach(l -> System.out.println("Libro: " + l));
+            if (autor == null) {
+                System.out.println("No existe un autor con ID " + id);
+                return;
+            }
+
+            System.out.println(autor);
+
+        } catch (Exception e) {
+            System.out.println("Error al consultar el autor.");
+            e.printStackTrace();
+        }
     }
 
-    private static void listar() throws SQLException {
+    public static void listar() {
         List<AutorDTO> lista = dao.listarTodos();
-        lista.forEach(a -> System.out.println(a.getID_Autor() + " - " + a.getNombre_Autor()));
-    }
-
-    private static void modificar() throws SQLException {
-        System.out.print("ID: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-
-        System.out.print("Nuevo nombre: ");
-        String nombre = sc.nextLine();
-        System.out.print("Nuevo email: ");
-        String email = sc.nextLine();
-
-        if (!Validation.validarNombreAutor(nombre)
-                || !Validation.validarEmailAutor(email)) {
+        if (lista.isEmpty()) {
+            System.out.println("No hay autores.");
             return;
         }
 
-        dao.actualizar(new AutorDTO(id, email, nombre));
-        System.out.println("Autor modificado.");
-    }
-
-    private static void eliminar() throws SQLException {
-        System.out.print("ID: ");
-        int id = sc.nextInt();
-
-        if (dao.eliminar(id)) {
-            System.out.println("Autor eliminado.");
-        } else {
-            System.out.println("No existe.");
+        System.out.println("Lista de autores:");
+        for (AutorDTO a : lista) {
+            System.out.println(a);
         }
     }
 
-    private static void cargarCSV() throws SQLException {
-        List<AutorDTO> lista = LeerCSV.loadContactosFromCsv();
+    public static void modificar() {
+        try {
+            // Que muestre todos los autores antes de pedir la ID
+            listar();
+            System.out.print("Introduce la ID del Autor a modificar: ");
+            int id = sc.nextInt();
+            sc.nextLine();
 
-        lista.removeIf(a
-                -> !Validation.validarNombreAutor(a.getNombre_Autor())
-                || !Validation.validarEmailAutor(a.getEmail())
-        );
+            AutorDTO autor = AutorDAO.buscarPorId(id);
 
-        dao.insertarBatch(lista);
-        System.out.println("Autores cargados: " + lista.size());
+            if (autor == null) {
+                System.out.println("No existe un autor con ID " + id);
+                return;
+            }
+
+            String nombre, email;
+
+            //Comprobar validez del nombre con Validation.validarNombreAutor
+            while (true) {
+                System.out.print("Nuevo nombre del autor (actual: " + autor.getNombre_Autor() + "): ");
+                nombre = sc.nextLine();
+                if (Validation.validarNombreAutor(nombre)) {
+                    break;
+                }
+            }
+
+            //Comprobar validez del email con Validation.validarEmailAutor
+            while (true) {
+                System.out.print("Nuevo email del autor (actual: " + autor.getEmail() + "): ");
+                email = sc.nextLine();
+                if (Validation.validarEmailAutor(email)) {
+                    break;
+                }
+            }
+
+            autor.setNombre_Autor(nombre);
+            autor.setEmail(email);
+
+            if (AutorDAO.actualizar(autor)) {
+                System.out.println("Autor modificado.");
+            } else {
+                System.out.println("No se pudo modificar el autor.");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al modificar el autor.");
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void eliminar() {
+        try {
+            // Que muestre todos los autores antes de pedir la ID
+            listar();
+            System.out.print("Introduce la ID del Autor a eliminar: ");
+            int id = sc.nextInt();
+
+            if (dao.eliminar(id)) {
+                System.out.println("Autor eliminado.");
+            } else {
+                System.out.println("No existe un autor con ID " + id);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al eliminar el autor.");
+            e.printStackTrace();
+        }
+    }
+
+    public static void librosDeAutor() {
+        System.out.print("Introduce la ID del Autor para ver sus libros: ");
+        int id = sc.nextInt();
+
+        try {
+            List<String> libros = AutorDAO.librosPorAutor(id);
+
+            if (libros.isEmpty()) {
+                System.out.println("El autor no tiene libros asociados o no existe.");
+                return;
+            }
+
+            System.out.println("Libros del autor con ID " + id + ":");
+            for (String titulo : libros) {
+                System.out.println(titulo);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al obtener los libros del autor.");
+            e.printStackTrace();
+        }
+    }
+
+    public static void cargarDesdeCSV() {
+
+        List<AutorDTO> autoresCSV = LeerCSV.loadContactosFromCsv();
+        List<AutorDTO> autoresValidos = new ArrayList<>();
+
+        for (AutorDTO autor : autoresCSV) {
+
+            String nombre = autor.getNombre_Autor();
+            String email = autor.getEmail();
+
+            // Validar datos
+            if (!Validation.validarNombreAutor(nombre) || !Validation.validarEmailAutor(email)) {
+                System.out.println("Fila inválida -> Nombre: " + nombre + ", Email: " + email);
+                continue; // saltar esta fila y seguir con las demás
+            }
+
+            autoresValidos.add(autor);
+        }
+
+        if (autoresValidos.isEmpty()) {
+            System.out.println("No hay autores válidos para insertar.");
+            return;
+        }
+
+        int[] resultado = AutorDAO.createBatch(autoresValidos);
+
+        System.out.println("Autores insertados correctamente: " + resultado.length);
     }
 }

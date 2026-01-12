@@ -1,11 +1,13 @@
 package dto;
 
 public class EditorialDTO {
+
     private int ID_Editorial;
     private String Nombre_Editorial;
 
-    public EditorialDTO() {}
-    
+    public EditorialDTO() {
+    }
+
     public EditorialDTO(int ID_Editorial, String Nombre_Editorial) {
         this.ID_Editorial = ID_Editorial;
         this.Nombre_Editorial = Nombre_Editorial;
@@ -29,7 +31,7 @@ public class EditorialDTO {
 
     @Override
     public String toString() {
-        return "EditorialDTO [ID_Autor=" + ID_Editorial + ", Nombre_Editorial=" + Nombre_Editorial + "]";
+        return "EditorialDTO [ID_Editorial=" + ID_Editorial + ", Nombre_Editorial=" + Nombre_Editorial + "]";
     }
-    
+
 }

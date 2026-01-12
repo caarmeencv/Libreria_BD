@@ -1,7 +1,9 @@
 package service;
 
 import dao.EditorialDAO;
+import dao.LibroDAO;
 import dto.EditorialDTO;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 import utils.Validation;
@@ -13,12 +15,12 @@ public class EditorialService {
 
     public static void dameOpcion() {
         int opcion = 0;
-        do {
+        while (opcion != 7) {
             mostrarMenuEditorial();
-            opcion = sc.nextInt();
-            sc.nextLine();
 
             try {
+                opcion = sc.nextInt();
+                sc.nextLine();
                 switch (opcion) {
                     case 1:
                         crear();
@@ -42,13 +44,15 @@ public class EditorialService {
                         System.out.println("Volviendo al menú principal...");
                         break;
                     default:
-                        System.out.println("Opción no válida.");
-                        break;
+                        System.out.println("Opción no válida. Por favor, elige una opción del 1 al 7.");
                 }
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada no válida. Por favor, introduce un número entre 1 y 7.");
+                sc.nextLine();
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
-        } while (opcion != 0);
+        }
     }
 
     public static void mostrarMenuEditorial() {
@@ -81,6 +85,11 @@ public class EditorialService {
     }
 
     public static void consultar() {
+        //Si no hay editoriales, no dejar continuar
+        if (EditorialDAO.listarTodos().isEmpty()) {
+            System.out.println("No hay editoriales para consultar.");
+            return;
+        }
         System.out.print("Introduce la ID de la Editorial a consultar: ");
         int id = sc.nextInt();
 
@@ -118,6 +127,10 @@ public class EditorialService {
         try {
             // Que muestre todas las editoriales antes de pedir la ID
             listar();
+            //si no hay editoriales, no dejar continuar
+            if (EditorialDAO.listarTodos().isEmpty()) {
+                return;
+            }
             System.out.print("Introduce la ID de la Editorial a modificar: ");
             int id = sc.nextInt();
             sc.nextLine();
@@ -163,6 +176,10 @@ public class EditorialService {
         try {
             // En este método solo se deben eliminar editoriales que no tengan libros asociados
             listar();
+            //si no hay editoriales, no dejar continuar
+            if (EditorialDAO.listarTodos().isEmpty()) {
+                return;
+            }
             System.out.print("Introduce la ID de la Editorial a eliminar: ");
             int id = sc.nextInt();
 
@@ -192,7 +209,16 @@ public class EditorialService {
 
     public static void mostrarLibrosDeEditorial() {
         try {
+            //si no hay libros, no dejar continuar
+            if (LibroDAO.listarTodos().isEmpty()) {
+                System.out.println("No hay libros en la base de datos.");
+                return;
+            }
             listar();
+            //si no hay editoriales, no dejar continuar
+            if (EditorialDAO.listarTodos().isEmpty()) {
+                return;
+            }
             System.out.print("Introduce la ID de la Editorial para mostrar sus libros: ");
             int id = sc.nextInt();
 
