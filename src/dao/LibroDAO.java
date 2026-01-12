@@ -10,8 +10,7 @@ public class LibroDAO {
 
     public static boolean existeISBN(String isbn) {
         String sql = "SELECT COUNT(*) FROM Libro WHERE ISBN = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, isbn);
             ResultSet rs = ps.executeQuery();
@@ -22,84 +21,89 @@ public class LibroDAO {
         }
     }
 
-    public void insertar(LibroDTO libro, int idEditorial) throws SQLException {
-        String sql = "INSERT INTO Libro (ID_Editorial, ISBN, Titulo) VALUES (?, ?, ?)";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+    public static void create(LibroDTO libro) {
+        String sql = "INSERT INTO Libro (ISBN, Titulo, ID_Editorial) VALUES (?, ?, ?)";
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setInt(1, idEditorial);
-            ps.setString(2, libro.getISBN());
-            ps.setString(3, libro.getTitulo());
+            ps.setString(1, libro.getISBN());
+            ps.setString(2, libro.getTitulo());
+            ps.setInt(3, libro.getID_Editorial());
             ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public LibroDTO buscarPorId(int id) throws SQLException {
+    public static LibroDTO buscarPorId(int id) {
         String sql = "SELECT * FROM Libro WHERE ID_Libro = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
-                return new LibroDTO(
-                        rs.getInt("ID_Libro"),
-                        rs.getString("ISBN"),
-                        rs.getString("Titulo")
-                );
+                LibroDTO libro = new LibroDTO();
+                libro.setID_Libro(rs.getInt("ID_Libro"));
+                libro.setISBN(rs.getString("ISBN"));
+                libro.setTitulo(rs.getString("Titulo"));
+                libro.setID_Editorial(rs.getInt("ID_Editorial"));
+                return libro;
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    public List<LibroDTO> listarTodos() throws SQLException {
+    public static List<LibroDTO> listarTodos() {
         List<LibroDTO> lista = new ArrayList<>();
         String sql = "SELECT * FROM Libro";
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                lista.add(new LibroDTO(
-                        rs.getInt("ID_Libro"),
-                        rs.getString("ISBN"),
-                        rs.getString("Titulo")
-                ));
+                LibroDTO libro = new LibroDTO();
+                libro.setID_Libro(rs.getInt("ID_Libro"));
+                libro.setISBN(rs.getString("ISBN"));
+                libro.setTitulo(rs.getString("Titulo"));
+                libro.setID_Editorial(rs.getInt("ID_Editorial"));
+                lista.add(libro);
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return lista;
     }
 
-    public void actualizar(LibroDTO libro) throws SQLException {
-        String sql = "UPDATE Libro SET ISBN = ?, Titulo = ? WHERE ID_Libro = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+    public static void actualizar(LibroDTO libro) {
+        String sql = "UPDATE Libro SET ISBN = ?, Titulo = ?, ID_Editorial = ? WHERE ID_Libro = ?";
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, libro.getISBN());
             ps.setString(2, libro.getTitulo());
-            ps.setInt(3, libro.getID_Libro());
+            ps.setInt(3, libro.getID_Editorial());
+            ps.setInt(4, libro.getID_Libro());
             ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public boolean eliminar(int id) throws SQLException {
         String sql = "DELETE FROM Libro WHERE ID_Libro = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         }
     }
 
-    // ===== RELACIONES =====
-
     public void relacionarAutor(int idLibro, int idAutor) throws SQLException {
         String sql = "INSERT INTO Libro_Autor (ID_Libro, ID_Autor) VALUES (?, ?)";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idLibro);
             ps.setInt(2, idAutor);
@@ -109,8 +113,7 @@ public class LibroDAO {
 
     public void eliminarRelacion(int idLibro, int idAutor) throws SQLException {
         String sql = "DELETE FROM Libro_Autor WHERE ID_Libro = ? AND ID_Autor = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idLibro);
             ps.setInt(2, idAutor);
@@ -122,12 +125,13 @@ public class LibroDAO {
         List<String> lista = new ArrayList<>();
         String sql = "SELECT a.Nombre_Autor FROM Autor a JOIN Libro_Autor la ON a.ID_Autor = la.ID_AutorWHERE la.ID_Libro = ?";
 
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idLibro);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) lista.add(rs.getString(1));
+            while (rs.next()) {
+                lista.add(rs.getString(1));
+            }
         }
         return lista;
     }

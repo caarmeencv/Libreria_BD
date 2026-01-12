@@ -2,6 +2,7 @@ package service;
 
 import dao.EditorialDAO;
 import dao.LibroDAO;
+import dto.EditorialDTO;
 import dto.LibroDTO;
 import java.sql.SQLException;
 import java.util.List;
@@ -14,25 +15,15 @@ public class LibroService {
     private static final EditorialDAO editorialDAO = new EditorialDAO();
     private static final Scanner sc = new Scanner(System.in);
 
-    public static void menu() {
-        int op;
-        do {
-            System.out.println("\nMENÚ DE LIBROS");
-            System.out.println("1. Crear libro.");
-            System.out.println("2. Consultar libro por ID.");
-            System.out.println("3. Listar todos los libros.");
-            System.out.println("4. Modificar un libro por ID.");
-            System.out.println("5. Eliminar un libro por ID.");
-            System.out.println("6. Buscar autor o libro por palabra clave.");
-            System.out.println("7. Relacionar autor con libro.");
-            System.out.println("8. Mostrar autores de un libro.");
-            System.out.println("9. Eliminar la relación entre un autor y un libro.");
-            System.out.println("10. Volver al menú principal.");
-            op = sc.nextInt();
+    public static void dameOpcion() {
+        int opcion = 0;
+        while (opcion != 10) {
+            mostrarMenuLibro();
+            opcion = sc.nextInt();
             sc.nextLine();
 
             try {
-                switch (op) {
+                switch (opcion) {
                     case 1:
                         crear();
                         break;
@@ -61,72 +52,154 @@ public class LibroService {
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
-        } while (op != 0);
+        }
     }
 
-    private static void crear() throws SQLException {
-        if (editorialDAO.listarTodos().isEmpty()) {
-            System.out.println("No existen editoriales. Cree una primero.");
-            return;
-        }
-
-        System.out.print("ISBN: ");
-        String isbn = sc.nextLine();
-        if (!Validation.validarISBN(isbn)) {
-            return;
-        }
-
-        System.out.print("Título: ");
-        String titulo = sc.nextLine();
-        if (!Validation.validarTituloLibro(titulo)) {
-            return;
-        }
-
-        System.out.print("ID Editorial: ");
-        int idEditorial = sc.nextInt();
-
-        dao.insertar(new LibroDTO(0, isbn, titulo), idEditorial);
-        System.out.println("Libro creado correctamente.");
+    public static void mostrarMenuLibro() {
+        System.out.println("\nMENÚ DE LIBROS");
+        System.out.println("1. Crear libro.");
+        System.out.println("2. Consultar libro por ID.");
+        System.out.println("3. Listar todos los libros.");
+        System.out.println("4. Modificar un libro por ID.");
+        System.out.println("5. Eliminar un libro por ID.");
+        System.out.println("6. Buscar autor o libro por palabra clave.");
+        System.out.println("7. Relacionar autor con libro.");
+        System.out.println("8. Mostrar autores de un libro.");
+        System.out.println("9. Eliminar la relación entre un autor y un libro.");
+        System.out.println("10. Volver al menú principal.");
     }
 
-    private static void consultar() throws SQLException {
-        System.out.print("ID: ");
+    public static void crear() {
+        String isbn, titulo;
+
+        //Comprobar la validez del ISBN con Validation.validarISBN
+        while (true) {
+            System.out.print("Introduce ISBN del nuevo libro: ");
+            isbn = sc.nextLine();
+            if (Validation.validarISBN(isbn)) {
+                break;
+            }
+        }
+
+        //Comprobar la validez del título con Validation.validarTituloLibro
+        while (true) {
+            System.out.print("Introduce título del nuevo libro: ");
+            titulo = sc.nextLine();
+            if (Validation.validarTituloLibro(titulo)) {
+                break;
+            }
+        }
+
+        //Pedir un id de una editorial existente
+        int idEditorial;
+        while (true) {
+            System.out.print("Introduce ID de la editorial del nuevo libro: ");
+            idEditorial = sc.nextInt();
+            if (editorialDAO.buscarPorId(idEditorial) != null) {
+                break;
+            } else {
+                System.out.println("No existe una editorial con ese ID. Inténtalo de nuevo.");
+            }
+        }
+
+        LibroDTO nuevo = new LibroDTO();
+        nuevo.setISBN(isbn);
+        nuevo.setTitulo(titulo);
+        nuevo.setID_Editorial(idEditorial);
+        LibroDAO.create(nuevo);
+        System.out.println("Libro creado con ID: " + nuevo.getID_Libro());
+    }
+
+    public static void consultar() {
+        System.out.print("Introduce la ID del libro a consultar: ");
         int id = sc.nextInt();
 
-        LibroDTO l = dao.buscarPorId(id);
-        if (l == null) {
-            System.out.println("No existe ese libro.");
-            return;
-        }
+        try {
+            LibroDTO libro = LibroDAO.buscarPorId(id);
 
-        System.out.println(l);
-        dao.autoresPorLibro(id).forEach(a -> System.out.println("Autor: " + a));
+            if (libro == null) {
+                System.out.println("No existe ese libro.");
+                return;
+            }
+
+            System.out.println(libro);
+
+        } catch (Exception e) {
+            System.out.println("Error al consultar el libro.");
+            e.printStackTrace();
+        }
     }
 
-    private static void listar() throws SQLException {
-        List<LibroDTO> lista = dao.listarTodos();
-        lista.forEach(l -> System.out.println(l.getID_Libro() + " - " + l.getTitulo()));
+    public static void listar() {
+        try {
+            List<LibroDTO> lista = LibroDAO.listarTodos();
+
+            if (lista.isEmpty()) {
+                System.out.println("No hay libros registrados.");
+                return;
+            }
+
+            for (LibroDTO libro : lista) {
+                System.out.println(libro);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al listar los libros.");
+            e.printStackTrace();
+        }  
     }
 
-    private static void modificar() throws SQLException {
-        System.out.print("ID: ");
-        int id = sc.nextInt();
-        sc.nextLine();
+    public static void modificar() {
+        try {
+            listar();
+            System.out.print("Introduce la ID del libro a modificar: ");
+            int id = sc.nextInt();
+            sc.nextLine();
 
-        System.out.print("Nuevo ISBN: ");
-        String isbn = sc.nextLine();
-        if (!Validation.validarISBN(isbn)) {
-            return;
+            LibroDTO libro = LibroDAO.buscarPorId(id);
+
+            if (libro != null){
+                String titulo;
+                while (true) {
+                    System.out.println("Título actual: " + libro.getTitulo());
+                    System.out.print("Introduce el nuevo título del libro (Para mantener nombre actual, no introducir nada): ");
+                    titulo = sc.nextLine();
+                    //Si el usuario no introduce nada, mantener el título actual
+                    if (titulo.isEmpty()) {
+                        titulo = libro.getTitulo();
+                        break;
+                    }
+
+                    if (Validation.validarTituloLibro(titulo)) {
+                        break;
+                    }
+
+                    System.out.println("Título no válido. Inténtalo de nuevo.");
+                }
+
+                String isbn;
+                while (true) { 
+                    System.out.println("ISBN actual: " + libro.getISBN());
+                    System.out.print("Introduce el nuevo ISBN del libro (Para mantener ISBN actual, no introducir nada): ");
+                    isbn = sc.nextLine();
+                    //Si el usuario no introduce nada, mantener el ISBN actual
+                    if (isbn.isEmpty()) {
+                        isbn = libro.getISBN();
+                        break;
+                    }
+
+                    if (Validation.validarISBN(isbn)) {
+                        break;
+                    }
+
+                    System.out.println("ISBN no válido. Inténtalo de nuevo.");
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al modificar el libro.");
+            e.printStackTrace();
         }
-
-        System.out.print("Nuevo título: ");
-        String titulo = sc.nextLine();
-        if (!Validation.validarTituloLibro(titulo)) {
-            return;
-        }
-
-        dao.actualizar(new LibroDTO(id, isbn, titulo));
-        System.out.println("Libro modificado.");
     }
 
     private static void eliminar() throws SQLException {

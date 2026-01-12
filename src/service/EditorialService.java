@@ -11,17 +11,10 @@ public class EditorialService {
     private static final EditorialDAO dao = new EditorialDAO();
     private static final Scanner sc = new Scanner(System.in);
 
-    public static void menu() {
-        int opcion;
+    public static void dameOpcion() {
+        int opcion = 0;
         do {
-            System.out.println("\nMENÚ DE EDITORIALES");
-            System.out.println("1. Crear editorial.");
-            System.out.println("2. Consultar una editorial por ID.");
-            System.out.println("3. Listar todas las editoriales.");
-            System.out.println("4. Modificar una editorial.");
-            System.out.println("5. Eliminar una editorial.");
-            System.out.println("6. Mostrar libros de una editorial.");
-            System.out.println("7. Volver al menú principal.");
+            mostrarMenuEditorial();
             opcion = sc.nextInt();
             sc.nextLine();
 
@@ -58,6 +51,17 @@ public class EditorialService {
         } while (opcion != 0);
     }
 
+    public static void mostrarMenuEditorial() {
+        System.out.println("\nMENÚ DE EDITORIALES");
+        System.out.println("1. Crear editorial.");
+        System.out.println("2. Consultar una editorial por ID.");
+        System.out.println("3. Listar todas las editoriales.");
+        System.out.println("4. Modificar una editorial.");
+        System.out.println("5. Eliminar una editorial.");
+        System.out.println("6. Mostrar libros de una editorial.");
+        System.out.println("7. Volver al menú principal.");
+    }
+
     public static void crear() {
         String nombre;
 
@@ -81,14 +85,14 @@ public class EditorialService {
         int id = sc.nextInt();
 
         try {
-            EditorialDTO editoriales = EditorialDAO.buscarPorId(id);
+            EditorialDTO editorial = EditorialDAO.buscarPorId(id);
 
-            if (editoriales == null) {
+            if (editorial == null) {
                 System.out.println("No existe esa editorial.");
                 return;
             }
 
-            System.out.println(editoriales);
+            System.out.println(editorial);
             System.out.println("Número de libros: " + EditorialDAO.contarLibros(id));
 
         } catch (Exception e) {
@@ -137,6 +141,8 @@ public class EditorialService {
                     if (Validation.validarNombreEditorial(nombre)) {
                         break;
                     }
+
+                    System.out.println("Nombre no válido. Inténtalo de nuevo.");
                 }
 
                 editorial.setNombre_Editorial(nombre);

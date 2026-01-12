@@ -13,21 +13,10 @@ public class AutorService {
     private static final AutorDAO dao = new AutorDAO();
     private static final Scanner sc = new Scanner(System.in);
 
-    public static void menu() {
-        int opcion;
-        do {
-            System.out.println("\nMENÚ DE AUTORES");
-            System.out.println("1. Crear autor.");
-            System.out.println("2. Consultar un autor por ID.");
-            System.out.println("3. Listar todos los autores.");
-            System.out.println("4. Modificar un autor por ID.");
-            System.out.println("5. Eliminar un autor por ID.");
-            System.out.println("6. Buscar libros y autores por una palabra clave.");
-            System.out.println("7. Relacionar un autor con un libro.");
-            System.out.println("8. Mostrar libros de un autor.");
-            System.out.println("9. Eliminar la relación entre un autor y un libro.");
-            System.out.println("10. Cargar autores desde CSV.");
-            System.out.println("11. Volver al menú principal.");
+    public static void dameOpcion() {
+        int opcion = 0;
+        while (opcion != 11) {
+            mostrarMenuAutor();
             opcion = sc.nextInt();
             sc.nextLine();
 
@@ -58,10 +47,25 @@ public class AutorService {
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
-        } while (opcion != 0);
+        }
     }
 
-    private static void crear() throws SQLException {
+    public static void mostrarMenuAutor() {
+        System.out.println("\nMENÚ DE AUTORES");
+        System.out.println("1. Crear autor.");
+        System.out.println("2. Consultar un autor por ID.");
+        System.out.println("3. Listar todos los autores.");
+        System.out.println("4. Modificar un autor por ID.");
+        System.out.println("5. Eliminar un autor por ID.");
+        System.out.println("6. Buscar libros y autores por una palabra clave.");
+        System.out.println("7. Relacionar un autor con un libro.");
+        System.out.println("8. Mostrar libros de un autor.");
+        System.out.println("9. Eliminar la relación entre un autor y un libro.");
+        System.out.println("10. Cargar autores desde CSV.");
+        System.out.println("11. Volver al menú principal.");
+    }
+
+    public static void crear() throws SQLException {
         System.out.print("Nombre: ");
         String nombre = sc.nextLine();
         System.out.print("Email: ");

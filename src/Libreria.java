@@ -1,3 +1,4 @@
+
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import service.AutorService;
@@ -12,7 +13,7 @@ public class Libreria {
 
         int opcion = 0;
 
-        while(opcion != 4){
+        while (opcion != 4) {
             mostrarMenuPrincipal();
             try {
                 opcion = sc.nextInt();
@@ -20,13 +21,13 @@ public class Libreria {
 
                 switch (opcion) {
                     case 1:
-                        EditorialService.menu();
+                        EditorialService.dameOpcion();
                         break;
                     case 2:
-                        LibroService.menu();
+                        LibroService.dameOpcion();
                         break;
                     case 3:
-                        AutorService.menu();
+                        AutorService.dameOpcion();
                         break;
                     case 4:
                         System.out.println("Saliendo del programa...");
@@ -45,10 +46,10 @@ public class Libreria {
 
     private static void mostrarMenuPrincipal() {
         System.out.println("\nMENÚ PRINCIPAL");
-            System.out.println("1. Menú de editoriales.");
-            System.out.println("2. Menú de libros.");
-            System.out.println("3. Menú de autores.");
-            System.out.println("4. Salir del programa.");
-            System.out.print("Elige una opción entre 1 y  4: ");
+        System.out.println("1. Menú de editoriales.");
+        System.out.println("2. Menú de libros.");
+        System.out.println("3. Menú de autores.");
+        System.out.println("4. Salir del programa.");
+        System.out.print("Elige una opción entre 1 y  4: ");
     }
 }
