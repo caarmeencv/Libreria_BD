@@ -7,6 +7,7 @@ import service.LibroService;
 
 public class Libreria {
 
+    // Menú principal de la aplicación
     public static void main(String[] args) throws Exception {
 
         Scanner sc = new Scanner(System.in);
@@ -44,6 +45,7 @@ public class Libreria {
         System.out.println("Programa finalizado.");
     }
 
+    // Mostrar el menú principal
     private static void mostrarMenuPrincipal() {
         System.out.println("\nMENÚ PRINCIPAL");
         System.out.println("1. Menú de editoriales.");

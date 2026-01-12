@@ -8,6 +8,7 @@ import java.util.List;
 
 public class EditorialDAO {
 
+    // Método para verificar si existe una editorial por nombre, para evitar duplicados
     public static boolean existeNombre(String nombre) {
         String sql = "SELECT COUNT(*) FROM Editorial WHERE Nombre_Editorial = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -21,6 +22,7 @@ public class EditorialDAO {
         }
     }
 
+    // Método para crear una nueva editorial, devolviendo el ID autoincremental generado
     public static void create(EditorialDTO nuevo) {
         String sql = "INSERT INTO Editorial(Nombre_Editorial) VALUES (?)";
         try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -40,6 +42,7 @@ public class EditorialDAO {
         }
     }
 
+    // Método para buscar una editorial por su ID
     public static EditorialDTO buscarPorId(int id) {
         String sql = "SELECT * FROM Editorial WHERE ID_Editorial = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -61,6 +64,7 @@ public class EditorialDAO {
         return null;
     }
 
+    // Método para listar todas las editoriales
     public static List<EditorialDTO> listarTodos() {
         List<EditorialDTO> lista = new ArrayList<>();
         String sql = "SELECT * FROM Editorial";
@@ -79,6 +83,7 @@ public class EditorialDAO {
         return lista;
     }
 
+    // Método para actualizar una editorial existente
     public static void actualizar(EditorialDTO editorial) {
         String sql = "UPDATE Editorial SET Nombre_Editorial = ? WHERE ID_Editorial = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -93,6 +98,7 @@ public class EditorialDAO {
         }
     }
 
+    // Método para contar el número de libros asociados a una editorial
     public static int contarLibros(int idEditorial) {
         String sql = "SELECT COUNT(*) FROM Libro WHERE ID_Editorial = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -109,6 +115,7 @@ public class EditorialDAO {
         return idEditorial;
     }
 
+    // Método para eliminar una editorial por su ID
     public static boolean eliminar(int id) {
         String sql = "DELETE FROM Editorial WHERE ID_Editorial = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -123,7 +130,7 @@ public class EditorialDAO {
         }
     }
 
-    // Método para mostrar libros asociados a una editorial
+    // Método para mostrar libros asociados a una editorial, por su ID
     public static List<String> librosPorEditorial(int idEditorial) {
         List<String> lista = new ArrayList<>();
         String sql = "SELECT Titulo FROM Libro WHERE ID_Editorial = ?";

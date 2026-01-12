@@ -1,6 +1,7 @@
 package service;
 
 import dao.AutorDAO;
+import dao.LibroDAO;
 import dto.AutorDTO;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -11,18 +12,18 @@ import utils.Validation;
 
 public class AutorService {
 
-    private static final AutorDAO dao = new AutorDAO();
+    // Scanner estático para toda la clase
     private static final Scanner sc = new Scanner(System.in);
 
+    // Método para mostrar el menú y manejar las opciones
     public static void dameOpcion() {
-        Scanner sc = new Scanner(System.in);
         int opcion = 0;
         while (opcion != 11) {
             mostrarMenuAutor();
-            opcion = sc.nextInt();
-            sc.nextLine();
 
             try {
+                opcion = sc.nextInt();
+                sc.nextLine();
                 switch (opcion) {
                     case 1:
                         crear();
@@ -62,11 +63,15 @@ public class AutorService {
                         break;
                 }
             } catch (InputMismatchException e) {
+                System.out.println("Entrada no válida. Por favor, introduce un número entre 1 y 11.");
+                sc.nextLine();
+            } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
         }
     }
 
+    // Método para mostrar el menú de autores
     public static void mostrarMenuAutor() {
         System.out.println("\nMENÚ DE AUTORES");
         System.out.println("1. Crear autor.");
@@ -82,6 +87,7 @@ public class AutorService {
         System.out.println("11. Volver al menú principal.");
     }
 
+    // Método para crear un nuevo autor
     public static void crear() {
         String nombre, email;
 
@@ -111,6 +117,7 @@ public class AutorService {
 
     }
 
+    // Método para consultar un autor por ID
     public static void consultar() {
         System.out.print("Introduce la ID del Autor a consultar: ");
         int id = sc.nextInt();
@@ -131,8 +138,9 @@ public class AutorService {
         }
     }
 
+    // Método para listar todos los autores
     public static void listar() {
-        List<AutorDTO> lista = dao.listarTodos();
+        List<AutorDTO> lista = AutorDAO.listarTodos();
         if (lista.isEmpty()) {
             System.out.println("No hay autores.");
             return;
@@ -144,10 +152,15 @@ public class AutorService {
         }
     }
 
+    // Método para modificar un autor por ID
     public static void modificar() {
         try {
             // Que muestre todos los autores antes de pedir la ID
             listar();
+            //si no hay autores, no deja continuar
+            if (AutorDAO.listarTodos().isEmpty()) {
+                return;
+            }
             System.out.print("Introduce la ID del Autor a modificar: ");
             int id = sc.nextInt();
             sc.nextLine();
@@ -163,8 +176,13 @@ public class AutorService {
 
             //Comprobar validez del nombre con Validation.validarNombreAutor
             while (true) {
-                System.out.print("Nuevo nombre del autor (actual: " + autor.getNombre_Autor() + "): ");
+                System.out.println("Nombre actual del autor: " + autor.getNombre_Autor());
+                System.out.println("Introduce el nuevo nombre del autor (dejar en blanco para mantener el nombre actual): ");
                 nombre = sc.nextLine();
+                if (nombre.isEmpty()) {
+                    nombre = autor.getNombre_Autor();
+                    break;
+                }
                 if (Validation.validarNombreAutor(nombre)) {
                     break;
                 }
@@ -172,8 +190,13 @@ public class AutorService {
 
             //Comprobar validez del email con Validation.validarEmailAutor
             while (true) {
-                System.out.print("Nuevo email del autor (actual: " + autor.getEmail() + "): ");
+                System.out.println("Email actual del autor: " + autor.getEmail());
+                System.out.println("Introduce el nuevo email del autor (dejar en blanco para mantener el email actual): ");
                 email = sc.nextLine();
+                if (email.isEmpty()) {
+                    email = autor.getEmail();
+                    break;
+                }
                 if (Validation.validarEmailAutor(email)) {
                     break;
                 }
@@ -195,14 +218,19 @@ public class AutorService {
 
     }
 
+    // Método para eliminar un autor por ID
     public static void eliminar() {
         try {
             // Que muestre todos los autores antes de pedir la ID
             listar();
+            //si no hay autores, no deja continuar
+            if (AutorDAO.listarTodos().isEmpty()) {
+                return;
+            }
             System.out.print("Introduce la ID del Autor a eliminar: ");
             int id = sc.nextInt();
 
-            if (dao.eliminar(id)) {
+            if (AutorDAO.eliminar(id)) {
                 System.out.println("Autor eliminado.");
             } else {
                 System.out.println("No existe un autor con ID " + id);
@@ -214,18 +242,35 @@ public class AutorService {
         }
     }
 
+    // Método para mostrar los libros de un autor, dado su ID
     public static void librosDeAutor() {
-        System.out.print("Introduce la ID del Autor para ver sus libros: ");
-        int id = sc.nextInt();
+        //si no hay autores y libros, no deja continuar
+        if (AutorDAO.listarTodos().isEmpty() && LibroDAO.listarTodos().isEmpty()) {
+            System.out.println("No hay autores ni libros en la base de datos.");
+            return;
+        } else if (AutorDAO.listarTodos().isEmpty()) {
+            System.out.println("No hay autores en la base de datos.");
+            return;
+        } else if (LibroDAO.listarTodos().isEmpty()) {
+            System.out.println("No hay libros en la base de datos.");
+            return;
+        }
+
+        //Que muestre todos los autores antes de pedir la ID
+        listar();
 
         try {
+            System.out.print("Introduce la ID del Autor para mostrar sus libros: ");
+            int id = sc.nextInt();
             List<String> libros = AutorDAO.librosPorAutor(id);
 
+            //si la lista está vacía, el autor no tiene libros o no existe
             if (libros.isEmpty()) {
                 System.out.println("El autor no tiene libros asociados o no existe.");
                 return;
             }
 
+            // Mostrar los títulos de los libros del autor
             System.out.println("Libros del autor con ID " + id + ":");
             for (String titulo : libros) {
                 System.out.println(titulo);
@@ -237,6 +282,7 @@ public class AutorService {
         }
     }
 
+    // Método para cargar autores desde un archivo CSV
     public static void cargarDesdeCSV() {
 
         List<AutorDTO> autoresCSV = LeerCSV.loadContactosFromCsv();
@@ -247,7 +293,7 @@ public class AutorService {
             String nombre = autor.getNombre_Autor();
             String email = autor.getEmail();
 
-            // Validar datos
+            // Validar datos, si no son válidos, mostrar mensaje y saltar fila
             if (!Validation.validarNombreAutor(nombre) || !Validation.validarEmailAutor(email)) {
                 System.out.println("Fila inválida -> Nombre: " + nombre + ", Email: " + email);
                 continue; // saltar esta fila y seguir con las demás
@@ -256,6 +302,7 @@ public class AutorService {
             autoresValidos.add(autor);
         }
 
+        // Si no hay autores válidos, mostrar mensaje y salir
         if (autoresValidos.isEmpty()) {
             System.out.println("No hay autores válidos para insertar.");
             return;

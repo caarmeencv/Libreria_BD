@@ -1,14 +1,12 @@
 package utils;
 
 import dao.AutorDAO;
-import dao.LibroDAO;
 import dao.EditorialDAO;
+import dao.LibroDAO;
 
 public class Validation {
 
-    // =======================
-    // VALIDAR EMAIL DE AUTOR
-    // =======================
+    // Validar email de autor, formato y unicidad
     public static boolean validarEmailAutor(String email) {
 
         // Comprobar que el email no existe ya en otro autor
@@ -26,9 +24,7 @@ public class Validation {
         return true;
     }
 
-    // =========================
-    // VALIDAR NOMBRE DE AUTOR
-    // =========================
+    // Validar nombre de autor, formato y unicidad
     public static boolean validarNombreAutor(String nombre) {
 
         // Comprobar que el nombre no existe ya en otro autor
@@ -58,9 +54,7 @@ public class Validation {
         return true;
     }
 
-    // =======================
-    // VALIDAR ISBN DE LIBRO
-    // =======================
+    // Validar ISBN de libro, formato y unicidad
     public static boolean validarISBN(String isbn) {
 
         // Comprobar que el ISBN no existe ya en otro libro
@@ -84,9 +78,7 @@ public class Validation {
         return true;
     }
 
-    // =========================
-    // VALIDAR TÍTULO DE LIBRO
-    // =========================
+    // Validar título de libro, formato y longitud
     public static boolean validarTituloLibro(String titulo) {
 
         // Comprobar que no es nulo ni vacío
@@ -104,9 +96,7 @@ public class Validation {
         return true;
     }
 
-    // =============================
-    // VALIDAR NOMBRE DE EDITORIAL
-    // =============================
+    // Validar nombre de editorial, formato y unicidad
     public static boolean validarNombreEditorial(String nombre) {
 
         // Comprobar que no es nulo ni vacío

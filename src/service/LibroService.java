@@ -12,10 +12,10 @@ import utils.Validation;
 
 public class LibroService {
 
-    private static final LibroDAO dao = new LibroDAO();
-    private static final EditorialDAO editorialDAO = new EditorialDAO();
+    //Scanner estático para toda la clase
     private static final Scanner sc = new Scanner(System.in);
 
+    //  Menú de libros
     public static void dameOpcion() {
         int opcion = 0;
         while (opcion != 10) {
@@ -55,11 +55,11 @@ public class LibroService {
                     case 10:
                         System.out.println("Volviendo al menú principal...");
                     default:
-                        System.out.println("Opción no válida.");
+                        System.out.println("Opción no válida. Por favor, elige una opción del 1 al 10.");
                         break;
                 }
             } catch (InputMismatchException e) {
-                System.out.println("Entrada no válida. Por favor, introduce un número entre 1 y 7.");
+                System.out.println("Entrada no válida. Por favor, introduce un número entre 1 y 10.");
                 sc.nextLine();
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
@@ -67,6 +67,7 @@ public class LibroService {
         }
     }
 
+    // Mostrar el menú de libros
     public static void mostrarMenuLibro() {
         System.out.println("\nMENÚ DE LIBROS");
         System.out.println("1. Crear libro.");
@@ -81,6 +82,7 @@ public class LibroService {
         System.out.println("10. Volver al menú principal.");
     }
 
+    // Crear un nuevo libro
     public static void crear() {
         String isbn, titulo;
 
@@ -113,14 +115,14 @@ public class LibroService {
 
         //mostrar las editoriales disponibles
         System.out.println("Editoriales disponibles:");
-        List<EditorialDTO> editoriales = editorialDAO.listarTodos();
+        List<EditorialDTO> editoriales = EditorialDAO.listarTodos();
         for (EditorialDTO editorial : editoriales) {
             System.out.println(editorial);
         }
         while (true) {
             System.out.print("Introduce ID de la editorial del nuevo libro: ");
             idEditorial = sc.nextInt();
-            if (editorialDAO.buscarPorId(idEditorial) != null) {
+            if (EditorialDAO.buscarPorId(idEditorial) != null) {
                 break;
             } else {
                 System.out.println("No existe una editorial con ese ID. Inténtalo de nuevo.");
@@ -135,6 +137,7 @@ public class LibroService {
         System.out.println("Libro creado con ID: " + nuevo.getID_Libro());
     }
 
+    // Consultar un libro por su ID
     public static void consultar() {
         //Si no hay libros, no dejar continuar
         if (LibroDAO.listarTodos().isEmpty()) {
@@ -160,6 +163,7 @@ public class LibroService {
         }
     }
 
+    // Listar todos los libros
     public static void listar() {
         //si no hay libros, no dejar continuar
         if (LibroDAO.listarTodos().isEmpty()) {
@@ -184,22 +188,21 @@ public class LibroService {
         }
     }
 
+    // Modificar un libro por su ID
     public static void modificar() {
         try {
+            System.out.println("Lista de libros:");
             // Mostrar todos los libros
-            List<LibroDTO> libros = LibroDAO.listarTodos();
-            if (libros.isEmpty()) {
-                System.out.println("No hay libros para modificar.");
+            listar();
+            //si no hay libros, no dejar continuar
+            if (LibroDAO.listarTodos().isEmpty()) {
                 return;
-            }
-
-            System.out.println("Libros disponibles:");
-            for (LibroDTO l : libros) {
-                System.out.println(l);
             }
 
             int idLibro;
             LibroDTO libro;
+
+            // Pedir un ID válido
             while (true) {
                 System.out.print("Introduce el ID del libro a modificar: ");
                 idLibro = sc.nextInt();
@@ -214,6 +217,8 @@ public class LibroService {
             }
 
             String nuevoISBN;
+
+            //Comprobar la validez del ISBN con Validation.validarISBN
             while (true) {
                 System.out.println("ISBN actual: " + libro.getISBN());
                 System.out.print("Introduce nuevo ISBN (Enter para mantener actual): ");
@@ -232,6 +237,8 @@ public class LibroService {
             }
 
             String nuevoTitulo;
+
+            //Comprobar la validez del título con Validation.validarTituloLibro
             while (true) {
                 System.out.println("Título actual: " + libro.getTitulo());
                 System.out.print("Introduce nuevo título (Enter para mantener actual): ");
@@ -251,6 +258,8 @@ public class LibroService {
 
             int nuevaEditorialId;
             List<EditorialDTO> editoriales = EditorialDAO.listarTodos();
+
+            //si no hay editoriales, no dejar continuar
             if (editoriales.isEmpty()) {
                 System.out.println("No hay editoriales disponibles. Debes crear una editorial primero.");
                 return;
@@ -261,6 +270,7 @@ public class LibroService {
                 System.out.println("ID: " + e.getID_Editorial() + " | Nombre: " + e.getNombre_Editorial());
             }
 
+            //Pedir un id de una editorial existente
             while (true) {
                 System.out.print("Introduce ID de la nueva editorial (Enter para mantener actual): ");
                 String input = sc.nextLine();
@@ -295,10 +305,12 @@ public class LibroService {
         }
     }
 
+    // Eliminar un libro por su ID
     public static void eliminar() {
-
+        System.out.println("Lista de libros:");
+        listar();
+        //si no hay libros, no dejar continuar
         if (LibroDAO.listarTodos().isEmpty()) {
-            System.out.println("No hay libros para eliminar.");
             return;
         }
         System.out.print("Introduce la ID del libro a eliminar: ");
@@ -317,6 +329,7 @@ public class LibroService {
         }
     }
 
+    // Buscar libros y autores por palabra clave
     public static void buscarPorPalabraClave() {
 
         if (LibroDAO.listarTodos().isEmpty() && AutorDAO.listarTodos().isEmpty()) {
@@ -340,6 +353,7 @@ public class LibroService {
 
     }
 
+    // Mostrar autores de un libro específico
     public static void mostrarAutores() {
         //si no hay autores ni libros, no dejar continuar
 
@@ -356,15 +370,12 @@ public class LibroService {
 
         //Mostrar libros disponibles
         System.out.println("Libros disponibles:");
-        List<LibroDTO> libros = LibroDAO.listarTodos();
-        for (LibroDTO libro : libros) {
-            System.out.println(libro);
-        }
+        listar();
         System.out.print("Introduce la ID del libro para mostrar sus autores: ");
         int idLibro = sc.nextInt();
 
         try {
-            List<String> autores = dao.autoresPorLibro(idLibro);
+            List<String> autores = LibroDAO.autoresPorLibro(idLibro);
             if (autores.isEmpty()) {
                 System.out.println("El libro con ID " + idLibro + " no tiene autores asociados.");
                 return;
@@ -381,6 +392,7 @@ public class LibroService {
         }
     }
 
+    // Relacionar un autor con un libro
     public static void relacionar() {
         //dice que no hay libros o autores para relacionar
         if (LibroDAO.listarTodos().isEmpty() && AutorDAO.listarTodos().isEmpty()) {
@@ -410,6 +422,12 @@ public class LibroService {
             System.out.print("ID Autor: ");
             int idAutor = sc.nextInt();
 
+            //si ya existe la relación, no dejar continuar
+            if (LibroDAO.existeRelacion(idLibro, idAutor)) {
+                System.out.println("Ya existe una relación entre el libro con ID " + idLibro + " y el autor con ID " + idAutor + ".");
+                return;
+            }
+
             LibroDAO.relacionarAutor(idLibro, idAutor);
             System.out.println("Relación entre el autor con ID " + idAutor + " y el libro con ID " + idLibro + " creada.");
 
@@ -419,6 +437,7 @@ public class LibroService {
         }
     }
 
+    // Eliminar la relación entre un autor y un libro
     public static void eliminarRelacion() {
         //dice que no hay libros o autores para eliminar la relación
         if (LibroDAO.listarTodos().isEmpty() && AutorDAO.listarTodos().isEmpty()) {
@@ -451,7 +470,7 @@ public class LibroService {
             int idAutor = sc.nextInt();
 
             //si no existe la relación, no dejar continuar
-            if (!dao.existeRelacion(idLibro, idAutor)) {
+            if (!LibroDAO.existeRelacion(idLibro, idAutor)) {
                 System.out.println("No existe una relación entre el libro con ID " + idLibro + " y el autor con ID " + idAutor + ".");
                 return;
             }

@@ -10,9 +10,10 @@ import utils.Validation;
 
 public class EditorialService {
 
-    private static final EditorialDAO dao = new EditorialDAO();
+    // Scanner estático para toda la clase
     private static final Scanner sc = new Scanner(System.in);
 
+    // Método principal para mostrar el menú y manejar las opciones
     public static void dameOpcion() {
         int opcion = 0;
         while (opcion != 7) {
@@ -55,6 +56,7 @@ public class EditorialService {
         }
     }
 
+    // Método para mostrar el menú de editoriales
     public static void mostrarMenuEditorial() {
         System.out.println("\nMENÚ DE EDITORIALES");
         System.out.println("1. Crear editorial.");
@@ -66,6 +68,7 @@ public class EditorialService {
         System.out.println("7. Volver al menú principal.");
     }
 
+    // Método para crear una nueva editorial
     public static void crear() {
         String nombre;
 
@@ -84,6 +87,7 @@ public class EditorialService {
         System.out.println("Editorial creada con ID: " + nuevo.getID_Editorial());
     }
 
+    // Método para consultar una editorial por su ID
     public static void consultar() {
         //Si no hay editoriales, no dejar continuar
         if (EditorialDAO.listarTodos().isEmpty()) {
@@ -110,8 +114,11 @@ public class EditorialService {
         }
     }
 
+    // Método para listar todas las editoriales
     public static void listar() {
         List<EditorialDTO> lista = EditorialDAO.listarTodos();
+
+        // Si la lista está vacía, informar al usuario
         if (lista.isEmpty()) {
             System.out.println("No hay editoriales.");
             return;
@@ -123,6 +130,7 @@ public class EditorialService {
         }
     }
 
+    // Método para modificar una editorial existente
     public static void modificar() {
         try {
             // Que muestre todas las editoriales antes de pedir la ID
@@ -172,6 +180,7 @@ public class EditorialService {
 
     }
 
+    // Método para eliminar una editorial
     public static void eliminar() {
         try {
             // En este método solo se deben eliminar editoriales que no tengan libros asociados
@@ -207,6 +216,7 @@ public class EditorialService {
         }
     }
 
+    // Método para mostrar los libros de una editorial específica
     public static void mostrarLibrosDeEditorial() {
         try {
             //si no hay libros, no dejar continuar
@@ -223,6 +233,8 @@ public class EditorialService {
             int id = sc.nextInt();
 
             List<String> libros = EditorialDAO.librosPorEditorial(id);
+
+            // Si no hay libros asociados a la editorial, informar al usuario
             if (libros.isEmpty()) {
                 System.out.println("No hay libros asociados a esta editorial.");
                 return;

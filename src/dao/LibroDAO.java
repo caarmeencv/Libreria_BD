@@ -8,6 +8,7 @@ import java.util.List;
 
 public class LibroDAO {
 
+    // Verifica si un libro con el mismo ISBN ya existe en la base de datos, para evitar duplicados
     public static boolean existeISBN(String isbn) {
         String sql = "SELECT COUNT(*) FROM Libro WHERE ISBN = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -21,6 +22,7 @@ public class LibroDAO {
         }
     }
 
+    // Crea un nuevo libro en la base de datos y asigna el ID generado al objeto LibroDTO
     public static void create(LibroDTO libro) {
         String sql = "INSERT INTO Libro (ISBN, Titulo, ID_Editorial) VALUES (?, ?, ?)";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -43,6 +45,7 @@ public class LibroDAO {
         }
     }
 
+    // Busca un libro por su ID y devuelve un objeto LibroDTO con los datos encontrados
     public static LibroDTO buscarPorId(int id) {
         String sql = "SELECT * FROM Libro WHERE ID_Libro = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -64,6 +67,7 @@ public class LibroDAO {
         return null;
     }
 
+    // Lista todos los libros en la base de datos y devuelve una lista de objetos LibroDTO
     public static List<LibroDTO> listarTodos() {
         List<LibroDTO> lista = new ArrayList<>();
         String sql = "SELECT * FROM Libro";
@@ -85,6 +89,7 @@ public class LibroDAO {
         return lista;
     }
 
+    //  Actualiza los datos de un libro existente en la base de datos
     public static void actualizar(LibroDTO libro) {
         String sql = "UPDATE Libro SET ISBN = ?, Titulo = ?, ID_Editorial = ? WHERE ID_Libro = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -100,6 +105,7 @@ public class LibroDAO {
         }
     }
 
+    // Elimina un libro de la base de datos, incluyendo sus relaciones con autores
     public static boolean eliminar(int id) {
         //Para eliminar un libro tenemos que eliminar también la relacion entre el libro y el autor en la tabla Libro_Autor(ID_Libro, ID_Autor)
         String sql = "DELETE FROM Libro WHERE ID_Libro = ?";
@@ -119,6 +125,7 @@ public class LibroDAO {
         }
     }
 
+    // Busca libros cuyo título contenga una palabra clave y los imprime en consola
     public static List<LibroDTO> buscarLibrosPorPalabraClave(String palabraClave) {
         String sql = "SELECT * FROM Libro WHERE Titulo LIKE ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -134,6 +141,8 @@ public class LibroDAO {
         return null;
     }
 
+    // Métodos para gestionar la relación entre libros y autores
+    // Crea una relación entre un libro y un autor en la tabla Libro_Autor
     public static void relacionarAutor(int idLibro, int idAutor) {
         String sql = "INSERT INTO Libro_Autor (ID_Libro, ID_Autor) VALUES (?, ?)";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -147,6 +156,7 @@ public class LibroDAO {
         }
     }
 
+    // Elimina la relación entre un libro y un autor en la tabla Libro_Autor
     public static void eliminarRelacion(int idLibro, int idAutor) {
         String sql = "DELETE FROM Libro_Autor WHERE ID_Libro = ? AND ID_Autor = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -160,6 +170,7 @@ public class LibroDAO {
         }
     }
 
+    // Devuelve una lista de nombres de autores asociados a un libro específico
     public static List<String> autoresPorLibro(int idLibro) {
         String sql = "SELECT a.Nombre_Autor FROM Autor a JOIN Libro_Autor la ON a.ID_Autor = la.ID_Autor WHERE la.ID_Libro = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -179,6 +190,8 @@ public class LibroDAO {
 
     }
 
+    // Verifica si existe una relación entre un libro y un autor en la tabla Libro_Autor, devuelve true si existe, false en caso contrario
+    // Esto es útil para evitar duplicados al crear relaciones
     public static boolean existeRelacion(int idLibro, int idAutor) {
         String sql = "SELECT COUNT(*) FROM Libro_Autor WHERE ID_Libro = ? AND ID_Autor = ?";
         try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
