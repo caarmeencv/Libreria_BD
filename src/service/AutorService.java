@@ -14,20 +14,25 @@ public class AutorService {
     private static final Scanner sc = new Scanner(System.in);
 
     public static void menu() {
-        int op;
+        int opcion;
         do {
-            System.out.println("\n--- AUTORES ---");
-            System.out.println("1. Crear");
-            System.out.println("2. Consultar por ID");
-            System.out.println("3. Listar");
-            System.out.println("4. Modificar");
-            System.out.println("5. Eliminar");
-            System.out.println("6. Cargar desde CSV");
-            System.out.println("0. Volver");
-            op = sc.nextInt(); sc.nextLine();
+            System.out.println("\nMENÚ DE AUTORES");
+            System.out.println("1. Crear autor.");
+            System.out.println("2. Consultar un autor por ID.");
+            System.out.println("3. Listar todos los autores.");
+            System.out.println("4. Modificar un autor por ID.");
+            System.out.println("5. Eliminar un autor por ID.");
+            System.out.println("6. Buscar libros y autores por una palabra clave.");
+            System.out.println("7. Relacionar un autor con un libro.");
+            System.out.println("8. Mostrar libros de un autor.");
+            System.out.println("9. Eliminar la relación entre un autor y un libro.");
+            System.out.println("10. Cargar autores desde CSV.");
+            System.out.println("11. Volver al menú principal.");
+            opcion = sc.nextInt();
+            sc.nextLine();
 
             try {
-                switch (op) {
+                switch (opcion) {
                     case 1:
                         crear();
                         break;
@@ -53,7 +58,7 @@ public class AutorService {
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
-        } while (op != 0);
+        } while (opcion != 0);
     }
 
     private static void crear() throws SQLException {
@@ -62,8 +67,10 @@ public class AutorService {
         System.out.print("Email: ");
         String email = sc.nextLine();
 
-        if (!Validation.validarNombreAutor(nombre) ||
-            !Validation.validarEmailAutor(email)) return;
+        if (!Validation.validarNombreAutor(nombre)
+                || !Validation.validarEmailAutor(email)) {
+            return;
+        }
 
         dao.insertar(new AutorDTO(0, email, nombre));
         System.out.println("Autor creado correctamente.");
@@ -90,15 +97,18 @@ public class AutorService {
 
     private static void modificar() throws SQLException {
         System.out.print("ID: ");
-        int id = sc.nextInt(); sc.nextLine();
+        int id = sc.nextInt();
+        sc.nextLine();
 
         System.out.print("Nuevo nombre: ");
         String nombre = sc.nextLine();
         System.out.print("Nuevo email: ");
         String email = sc.nextLine();
 
-        if (!Validation.validarNombreAutor(nombre) ||
-            !Validation.validarEmailAutor(email)) return;
+        if (!Validation.validarNombreAutor(nombre)
+                || !Validation.validarEmailAutor(email)) {
+            return;
+        }
 
         dao.actualizar(new AutorDTO(id, email, nombre));
         System.out.println("Autor modificado.");
@@ -108,16 +118,19 @@ public class AutorService {
         System.out.print("ID: ");
         int id = sc.nextInt();
 
-        if (dao.eliminar(id)) System.out.println("Autor eliminado.");
-        else System.out.println("No existe.");
+        if (dao.eliminar(id)) {
+            System.out.println("Autor eliminado.");
+        } else {
+            System.out.println("No existe.");
+        }
     }
 
     private static void cargarCSV() throws SQLException {
         List<AutorDTO> lista = LeerCSV.loadContactosFromCsv();
 
-        lista.removeIf(a ->
-                !Validation.validarNombreAutor(a.getNombre_Autor()) ||
-                !Validation.validarEmailAutor(a.getEmail())
+        lista.removeIf(a
+                -> !Validation.validarNombreAutor(a.getNombre_Autor())
+                || !Validation.validarEmailAutor(a.getEmail())
         );
 
         dao.insertarBatch(lista);

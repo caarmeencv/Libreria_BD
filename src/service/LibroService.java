@@ -17,16 +17,19 @@ public class LibroService {
     public static void menu() {
         int op;
         do {
-            System.out.println("\n--- LIBROS ---");
-            System.out.println("1. Crear");
-            System.out.println("2. Consultar por ID");
-            System.out.println("3. Listar");
-            System.out.println("4. Modificar");
-            System.out.println("5. Eliminar");
-            System.out.println("6. Relacionar con autor");
-            System.out.println("7. Eliminar relación autor");
-            System.out.println("0. Volver");
-            op = sc.nextInt(); sc.nextLine();
+            System.out.println("\nMENÚ DE LIBROS");
+            System.out.println("1. Crear libro.");
+            System.out.println("2. Consultar libro por ID.");
+            System.out.println("3. Listar todos los libros.");
+            System.out.println("4. Modificar un libro por ID.");
+            System.out.println("5. Eliminar un libro por ID.");
+            System.out.println("6. Buscar autor o libro por palabra clave.");
+            System.out.println("7. Relacionar autor con libro.");
+            System.out.println("8. Mostrar autores de un libro.");
+            System.out.println("9. Eliminar la relación entre un autor y un libro.");
+            System.out.println("10. Volver al menú principal.");
+            op = sc.nextInt();
+            sc.nextLine();
 
             try {
                 switch (op) {
@@ -46,10 +49,10 @@ public class LibroService {
                         eliminar();
                         break;
                     case 6:
-                        relacionar();   
+                        relacionar();
                         break;
                     case 7:
-                        eliminarRelacion(); 
+                        eliminarRelacion();
                         break;
                     default:
                         System.out.println("Opción no válida.");
@@ -69,11 +72,15 @@ public class LibroService {
 
         System.out.print("ISBN: ");
         String isbn = sc.nextLine();
-        if (!Validation.validarISBN(isbn)) return;
+        if (!Validation.validarISBN(isbn)) {
+            return;
+        }
 
         System.out.print("Título: ");
         String titulo = sc.nextLine();
-        if (!Validation.validarTituloLibro(titulo)) return;
+        if (!Validation.validarTituloLibro(titulo)) {
+            return;
+        }
 
         System.out.print("ID Editorial: ");
         int idEditorial = sc.nextInt();
@@ -103,15 +110,20 @@ public class LibroService {
 
     private static void modificar() throws SQLException {
         System.out.print("ID: ");
-        int id = sc.nextInt(); sc.nextLine();
+        int id = sc.nextInt();
+        sc.nextLine();
 
         System.out.print("Nuevo ISBN: ");
         String isbn = sc.nextLine();
-        if (!Validation.validarISBN(isbn)) return;
+        if (!Validation.validarISBN(isbn)) {
+            return;
+        }
 
         System.out.print("Nuevo título: ");
         String titulo = sc.nextLine();
-        if (!Validation.validarTituloLibro(titulo)) return;
+        if (!Validation.validarTituloLibro(titulo)) {
+            return;
+        }
 
         dao.actualizar(new LibroDTO(id, isbn, titulo));
         System.out.println("Libro modificado.");
@@ -121,8 +133,11 @@ public class LibroService {
         System.out.print("ID: ");
         int id = sc.nextInt();
 
-        if (dao.eliminar(id)) System.out.println("Libro eliminado.");
-        else System.out.println("No existe.");
+        if (dao.eliminar(id)) {
+            System.out.println("Libro eliminado.");
+        } else {
+            System.out.println("No existe.");
+        }
     }
 
     private static void relacionar() throws SQLException {

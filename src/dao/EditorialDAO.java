@@ -10,8 +10,7 @@ public class EditorialDAO {
 
     public static boolean existeNombre(String nombre) {
         String sql = "SELECT COUNT(*) FROM Editorial WHERE Nombre_Editorial = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, nombre);
             ResultSet rs = ps.executeQuery();
@@ -22,81 +21,124 @@ public class EditorialDAO {
         }
     }
 
-    public void insertar(EditorialDTO editorial) throws SQLException {
-        String sql = "INSERT INTO Editorial (Nombre_Editorial) VALUES (?)";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+    public static void create(EditorialDTO editorial) {
+        String sql = "INSERT INTO Editorial(Nombre_Editorial) VALUES (?)";
+        try (Connection conn = ConnectionFactory.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, editorial.getNombre_Editorial());
+
             ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    editorial.setID_Editorial(rs.getInt(1));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
-    public EditorialDTO buscarPorId(int id) throws SQLException {
+    public static EditorialDTO buscarPorId(int id) {
         String sql = "SELECT * FROM Editorial WHERE ID_Editorial = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                return new EditorialDTO(
-                        rs.getInt("ID_Editorial"),
-                        rs.getString("Nombre_Editorial")
-                );
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    EditorialDTO editorial = new EditorialDTO();
+                    editorial.setID_Editorial(rs.getInt("ID_Editorial"));
+                    editorial.setNombre_Editorial(rs.getString("Nombre_Editorial"));
+                    return editorial;
+                }
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    public List<EditorialDTO> listarTodos() throws SQLException {
+    public static List<EditorialDTO> listarTodos() {
         List<EditorialDTO> lista = new ArrayList<>();
         String sql = "SELECT * FROM Editorial";
-
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                lista.add(new EditorialDTO(
-                        rs.getInt("ID_Editorial"),
-                        rs.getString("Nombre_Editorial")
-                ));
+                EditorialDTO editorial = new EditorialDTO();
+                editorial.setID_Editorial(rs.getInt("ID_Editorial"));
+                editorial.setNombre_Editorial(rs.getString("Nombre_Editorial"));
+                lista.add(editorial);
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return lista;
     }
 
-    public void actualizar(EditorialDTO editorial) throws SQLException {
+    public static void actualizar(EditorialDTO editorial) {
         String sql = "UPDATE Editorial SET Nombre_Editorial = ? WHERE ID_Editorial = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, editorial.getNombre_Editorial());
             ps.setInt(2, editorial.getID_Editorial());
+
             ps.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
-    public int contarLibros(int idEditorial) throws SQLException {
+    public static int contarLibros(int idEditorial) {
         String sql = "SELECT COUNT(*) FROM Libro WHERE ID_Editorial = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idEditorial);
             ResultSet rs = ps.executeQuery();
-            return rs.next() ? rs.getInt(1) : 0;
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return idEditorial;
+    }
+
+    public static boolean eliminar(int id) {
+        String sql = "DELETE FROM Editorial WHERE ID_Editorial = ?";
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            int filasAfectadas = ps.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
-    public boolean eliminar(int id) throws SQLException {
-        String sql = "DELETE FROM Editorial WHERE ID_Editorial = ?";
-        try (Connection con = ConnectionFactory.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+    // Método para mostrar libros asociados a una editorial
+    public static List<String> librosPorEditorial(int idEditorial) {
+        List<String> lista = new ArrayList<>();
+        String sql = "SELECT Titulo FROM Libro WHERE ID_Editorial = ?";
+        try (Connection con = ConnectionFactory.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
+            ps.setInt(1, idEditorial);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(rs.getString("Titulo"));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return lista;
     }
 }

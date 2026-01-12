@@ -2,7 +2,6 @@ package service;
 
 import dao.EditorialDAO;
 import dto.EditorialDTO;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 import utils.Validation;
@@ -16,13 +15,14 @@ public class EditorialService {
         int opcion;
         do {
             System.out.println("\nMENÚ DE EDITORIALES");
-            System.out.println("1. Crear editorial nueva.");
+            System.out.println("1. Crear editorial.");
             System.out.println("2. Consultar una editorial por ID.");
-            System.out.println("3. Listar editoriales.");
+            System.out.println("3. Listar todas las editoriales.");
             System.out.println("4. Modificar una editorial.");
             System.out.println("5. Eliminar una editorial.");
-            System.out.println("6. Volver al menú principal.");
-            opcion = sc.nextInt(); 
+            System.out.println("6. Mostrar libros de una editorial.");
+            System.out.println("7. Volver al menú principal.");
+            opcion = sc.nextInt();
             sc.nextLine();
 
             try {
@@ -35,14 +35,17 @@ public class EditorialService {
                         break;
                     case 3:
                         listar();
-                        break;  
+                        break;
                     case 4:
                         modificar();
-                        break;  
+                        break;
                     case 5:
                         eliminar();
                         break;
                     case 6:
+                        mostrarLibrosDeEditorial();
+                        break;
+                    case 7:
                         System.out.println("Volviendo al menú principal...");
                         break;
                     default:
@@ -55,59 +58,152 @@ public class EditorialService {
         } while (opcion != 0);
     }
 
-    private static void crear() throws SQLException {
-        System.out.print("Escribe un nombre para la nueva editorial: ");
-        String nombre = sc.nextLine();
+    public static void crear() {
+        String nombre;
 
-        if (!Validation.validarNombreEditorial(nombre)) return;
+        //Comprobar validez del nombre con Validation.validarNombreEditorial
+        while (true) {
+            System.out.print("Introduce nombre de la editorial: ");
+            nombre = sc.nextLine();
+            if (Validation.validarNombreEditorial(nombre)) {
+                break;
+            }
+        }
 
-        dao.insertar(new EditorialDTO(0, nombre));
-        System.out.println("Editorial creada correctamente.");
+        EditorialDTO nuevo = new EditorialDTO();
+        nuevo.setNombre_Editorial(nombre);
+        EditorialDAO.create(nuevo);
+        System.out.println("Editorial creada con ID: " + nuevo.getID_Editorial());
     }
 
-    private static void consultar() throws SQLException {
-        System.out.print("ID: ");
+    public static void consultar() {
+        System.out.print("Introduce la ID de la Editorial a consultar: ");
         int id = sc.nextInt();
 
-        EditorialDTO e = dao.buscarPorId(id);
-        if (e == null) {
-            System.out.println("No existe esa editorial.");
+        try {
+            EditorialDTO editoriales = EditorialDAO.buscarPorId(id);
+
+            if (editoriales == null) {
+                System.out.println("No existe esa editorial.");
+                return;
+            }
+
+            System.out.println(editoriales);
+            System.out.println("Número de libros: " + EditorialDAO.contarLibros(id));
+
+        } catch (Exception e) {
+            System.out.println("Error al consultar la editorial.");
+            e.printStackTrace();
+        }
+    }
+
+    public static void listar() {
+        List<EditorialDTO> lista = EditorialDAO.listarTodos();
+        if (lista.isEmpty()) {
+            System.out.println("No hay editoriales.");
             return;
         }
 
-        System.out.println(e);
-        System.out.println("Número de libros: " + dao.contarLibros(id));
+        System.out.println("Lista de editoriales:");
+        for (EditorialDTO e : lista) {
+            System.out.println(e);
+        }
     }
 
-    private static void listar() throws SQLException {
-        List<EditorialDTO> lista = dao.listarTodos();
-        lista.forEach(e -> System.out.println(e.getID_Editorial() + " - " + e.getNombre_Editorial()));
-    }
+    public static void modificar() {
+        try {
+            // Que muestre todas las editoriales antes de pedir la ID
+            listar();
+            System.out.print("Introduce la ID de la Editorial a modificar: ");
+            int id = sc.nextInt();
+            sc.nextLine();
 
-    private static void modificar() throws SQLException {
-        System.out.print("ID: ");
-        int id = sc.nextInt(); sc.nextLine();
+            EditorialDTO editorial = EditorialDAO.buscarPorId(id);
 
-        System.out.print("Nuevo nombre: ");
-        String nombre = sc.nextLine();
+            if (editorial != null) {
+                String nombre;
+                while (true) {
+                    System.out.println("Nombre actual: " + editorial.getNombre_Editorial());
+                    System.out.println("Introduce el nuevo nombre de la editorial (Para mantener nombre actual, no introducir nada): ");
+                    nombre = sc.nextLine();
 
-        if (!Validation.validarNombreEditorial(nombre)) return;
+                    // Si el usuario no introduce nada, mantener el nombre actual
+                    if (nombre.isEmpty()) {
+                        nombre = editorial.getNombre_Editorial();
+                        break;
+                    }
 
-        dao.actualizar(new EditorialDTO(id, nombre));
-        System.out.println("Editorial modificada.");
-    }
+                    // Comprobar validez del nombre con Validation.validarNombreEditorial
+                    if (Validation.validarNombreEditorial(nombre)) {
+                        break;
+                    }
+                }
 
-    private static void eliminar() throws SQLException {
-        System.out.print("ID: ");
-        int id = sc.nextInt();
+                editorial.setNombre_Editorial(nombre);
+                EditorialDAO.actualizar(editorial);
+                System.out.println("Editorial modificada.");
+            } else {
+                System.out.println("No existe ninguna editorial con esa ID.");
+            }
 
-        int libros = dao.contarLibros(id);
-        if (libros > 0) {
-            System.out.println("No se puede borrar. Tiene " + libros + " libros asociados.");
-            return;
+        } catch (Exception e) {
+            System.out.println("Error al modificar la editorial.");
+            e.printStackTrace();
         }
 
-        if (dao.eliminar(id)) System.out.println("Editorial eliminada.");
-        else System.out.println("No existe.");
+    }
+
+    public static void eliminar() {
+        try {
+            // En este método solo se deben eliminar editoriales que no tengan libros asociados
+            listar();
+            System.out.print("Introduce la ID de la Editorial a eliminar: ");
+            int id = sc.nextInt();
+
+            int numLibros = EditorialDAO.contarLibros(id);
+            if (numLibros > 0) {
+                System.out.println("No se puede eliminar la editorial porque tiene libros asociados.");
+                System.out.println("Los libros que se deben eliminar son los siguientes: ");
+                List<String> libros = EditorialDAO.librosPorEditorial(id);
+                for (String libro : libros) {
+                    System.out.println(libro);
+                }
+                return;
+            }
+
+            boolean eliminado = EditorialDAO.eliminar(id);
+            if (eliminado) {
+                System.out.println("Editorial eliminada.");
+            } else {
+                System.out.println("No existe esa editorial.");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al eliminar la editorial.");
+            e.printStackTrace();
+        }
+    }
+
+    public static void mostrarLibrosDeEditorial() {
+        try {
+            listar();
+            System.out.print("Introduce la ID de la Editorial para mostrar sus libros: ");
+            int id = sc.nextInt();
+
+            List<String> libros = EditorialDAO.librosPorEditorial(id);
+            if (libros.isEmpty()) {
+                System.out.println("No hay libros asociados a esta editorial.");
+                return;
+            }
+
+            System.out.println("Libros asociados a la editorial:");
+            for (String libro : libros) {
+                System.out.println(libro);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al mostrar los libros de la editorial.");
+            e.printStackTrace();
+        }
     }
 }
